@@ -8,7 +8,7 @@ import RedScreen from './RedScreen';
 
 const Stack = createStackNavigator();
 
-const App = () => {
+const Nav = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
@@ -20,4 +20,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Nav;
