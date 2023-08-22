@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "male": "male",
+    "category": "обувь",
+    "name": "Nike",
+    "model": "Air Force",
+    "size": "43",
+    "price": 5000,
+    "description": "Отличный выбор для повседневной ходьбы",
+    "image" : "./assets/NikeAf1.jpeg"
+  },
+  {
+    "id": 1,
+    "male": "male",
+    "category": "обувь",
+    "name": "Nike",
+    "model": "Air Force Mid",
+    "size": "43",
+    "price": 10000,
+    "description": "Отличный выбор для повседневной ходьбы",
+    "image" : "./assets/NikeMid07.jpeg"
+  }
+]
