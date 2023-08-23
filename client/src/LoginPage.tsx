@@ -21,7 +21,7 @@ const LoginPage: React.FC = () => {
       const user = users.find((user: any) => user.login === username && user.password === password);
 
       if (user) {
-        navigation.navigate('Home');
+        navigation.navigate('Главная');
       } else {
         Alert.alert('Error', 'Invalid username or password.');
       }

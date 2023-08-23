@@ -1,50 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import {
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ImageBackground,
+  Modal,
+  TouchableWithoutFeedback,
+} from 'react-native';
+import axios from 'axios';
 
 interface Product {
-  id: number;
+  _id: number;
   name: string;
   price: number;
-  image: number;
+  description: string;
+  image: string;
+  sizes: Array<string>;
 }
-
-const mockProductData: Product[] = [
-  { id: 1, name: 'Борщ', price: 200, image: require('./assets/Borsh.jpeg') },
-  { id: 2, name: 'Паста', price: 350, image: require('./assets/Pasta.jpeg') },
-  { id: 3, name: 'Хинкали', price: 60, image: require('./assets/Hin.jpeg') },
-  { id: 4, name: 'Торт', price: 500, image: require('./assets/Tort.jpeg') },
-  // ... Добавьте больше продуктов по желанию
-];
 
 const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [imageBaseUrl, setImageBaseUrl] = useState<string>('http://46.229.128.194:5555/image/');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number>(-1); // -1 means no size selected
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    setProducts(mockProductData);
+    axios.get('http://46.229.128.194:5555/Products')
+      .then(response => {
+        setProducts(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+      });
   }, []);
+
+  const openModal = (product: Product) => {
+    setSelectedProduct(product);
+    setSelectedSizeIndex(-1); // Reset the selected size when opening the modal
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+    setSelectedSizeIndex(-1); // Reset the selected size when closing the modal
+    setModalVisible(false);
+  };
+
+  const selectSize = (index: number) => {
+    setSelectedSizeIndex(index);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {products.map((product) => (
-        <TouchableOpacity key={product.id} style={styles.card}>
-          <ImageBackground source={product.image} style={styles.cardBackground}>
-            <View style={styles.productInfoTopLeft}>
-              <Text style={styles.productNameTopLeft}>{product.name}</Text>
-            </View>
-            <View style={styles.productInfoTopRight}>
-              <Text style={styles.productPriceTopRight}>{product.price.toFixed(2)}₽</Text>
-            </View>
-            <View style={styles.imageContainer}>
-              <TouchableOpacity
-                style={styles.addButtonBottomRight}
-                onPress={() => console.log(`Added ${product.name} to cart`)}
-              >
-                <Text style={styles.addButtonText}>Купить</Text>
-              </TouchableOpacity>
-            </View>
+        <TouchableOpacity key={product._id} style={styles.card} onPress={() => openModal(product)}>
+          <ImageBackground source={{ uri: imageBaseUrl + product.image }} style={styles.cardBackground}>
+            {/* Other components inside the ImageBackground */}
           </ImageBackground>
         </TouchableOpacity>
       ))}
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        {selectedProduct && (
+          <TouchableWithoutFeedback onPress={closeModal}>
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContainer}>
+                <ImageBackground source={{ uri: imageBaseUrl + selectedProduct.image }} style={styles.modalImage}>
+                  {/* Other components inside the modal image background */}
+                </ImageBackground>
+                <Text style={styles.modalDescription}>{`Название: ${selectedProduct.name}`}</Text>
+                <Text style={styles.modalDescription}>{`Описание: ${selectedProduct.description}`}</Text>
+                {selectedProduct.sizes && (
+                  <View style={styles.sizeContainer}>
+                    {selectedProduct.sizes.map((size, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.sizeButton,
+                          selectedSizeIndex === index && { backgroundColor: 'green' },
+                        ]}
+                        onPress={() => selectSize(index)}
+                      >
+                        <Text style={[styles.sizeButtonText, selectedSizeIndex === index && { color: 'white' }]}>
+                          {size}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                <View style={styles.modalButtonsContainer}>
+                  <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'green' }]}>
+                    <Text style={styles.modalButtonText}>Добавить в избранное</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.modalButton, { backgroundColor: 'blue' }]}>
+                    <Text style={styles.modalButtonText}>Добавить в корзину</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        )}
+      </Modal>
     </ScrollView>
   );
 };
@@ -54,8 +113,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    height: 400, // Увеличили высоту карточки
-    marginBottom: 24, // Увеличили отступ снизу
+    height: 400,
+    marginBottom: 24,
     borderRadius: 8,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -70,49 +129,55 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'column',
   },
-  productInfoTopLeft: {
-    position: 'absolute', // Верхний левый угол
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  productNameTopLeft: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  productInfoTopRight: {
-    position: 'absolute', // Верхний правый угол
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  productPriceTopRight: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  imageContainer: {
+  modalBackground: {
     flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    paddingBottom: 8,
-    paddingRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  addButtonBottomRight: {
-    backgroundColor: 'green',
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 8,
+    width: '80%',
+  },
+  modalImage: {
+    height: 200,
+    resizeMode: 'cover',
+    marginBottom: 16,
+  },
+  modalDescription: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  sizeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  sizeButton: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    marginHorizontal: 8,
+  },
+  sizeButtonText: {
+    fontSize: 16,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
     padding: 12,
     borderRadius: 6,
-    alignSelf: 'flex-end',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginHorizontal: 4,
   },
-  addButtonText: {
+  modalButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },
