@@ -8,7 +8,8 @@ import Favorite from './src/screens/Favorite';
 import Cart from './src/screens/Cart';
 import Test from './src/screens/Test';
 import { Provider } from 'react-redux';
-import store from './store';
+import { store } from './store';
+
 
 
 

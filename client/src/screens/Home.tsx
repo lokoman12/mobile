@@ -15,13 +15,13 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-interface Product {
-  _id: number;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-  sizes: Array<string>;
+export interface Product {
+  _id?: number;
+  name?: string;
+  price?: number;
+  description?: string;
+  image?: string;
+  sizes?: Array<string>;
 }
 
 const Home: React.FC = () => {
