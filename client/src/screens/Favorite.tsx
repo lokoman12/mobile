@@ -28,7 +28,6 @@ const Favorite = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Favorites</Text>
       <FlatList
         data={favoriteProducts}
         renderItem={renderProductItem}

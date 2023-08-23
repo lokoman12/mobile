@@ -32,7 +32,6 @@ const Cart = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Shopping Cart</Text>
       <FlatList
         data={cartItems}
         renderItem={renderCartItem}
