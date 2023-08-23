@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const path = require('path');
 
 const app = express();
 const PORT = 5555;
@@ -12,7 +13,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 const database = client.db('shop');
-
+const assetsDir = path.join(__dirname, 'assets');
 // Открываем соединение при запуске приложения
 async function connectToDatabase() {
   try {
@@ -52,7 +53,12 @@ app.get('/users', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+app.get('/image/:imageName', (req, res) => {
+  const imageName = req.params.imageName;
+  const imagePath = path.join(assetsDir, imageName);
 
+  res.sendFile(imagePath);
+});
 app.listen(PORT, async () => {
   console.log(`Сервер запущен на порту ${PORT}`);
   await connectToDatabase();
