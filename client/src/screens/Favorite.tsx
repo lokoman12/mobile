@@ -1,77 +1,137 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import {useSelector} from 'react-redux';
+import {RootState} from '../../store/rootReducer';
+import {Product} from './Home';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Favorite = () => {
-  const [favoriteProducts, setFavoriteProducts] = useState([
-    { id: 1, name: 'Product 1', price: 10.99 },
-    { id: 2, name: 'Product 2', price: 19.99 },
-    // Добавьте остальные избранные товары сюда
-  ]);
-
-  const removeProduct = (productId : any) => {
-    const updatedProducts = favoriteProducts.filter(product => product.id !== productId);
-    setFavoriteProducts(updatedProducts);
-  };
-
-  const renderProductItem = ({ item }: { item: { id: number; name: string; price: number } }) => (
-    <View style={styles.productItem}>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>Price: ${item.price}</Text>
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => removeProduct(item.id)}
-      >
-        <Text style={styles.removeButtonText}>Remove</Text>
-      </TouchableOpacity>
-    </View>
+  const products = useSelector(
+    (state: RootState) => state.product.favoriteProduct,
   );
 
+  const [imageBaseUrl, setImageBaseUrl] = useState<string>(
+    'http://46.229.128.194:5555/image/',
+  );
+  const renderProductCard = (item: Product) => {
+    return (
+      <TouchableOpacity key={item._id}>
+        <View style={styles.productContainer}>
+          <Image
+            source={{uri: imageBaseUrl + item.image}}
+            style={styles.productImage}
+          />
+          <View style={styles.productDetails}>
+            <Text style={styles.productName}>{item.name}</Text>
+            <Text style={styles.productPrice}>{item.price} рублей</Text>
+            <Text style={styles.productPrice}>{item.description}</Text>
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity style={styles.deleteButton}>
+                <Icon name="favorite" size={30}></Icon>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={favoriteProducts}
-        renderItem={renderProductItem}
-        keyExtractor={item => item.id.toString()}
-      />
-    </View>
+    <>
+      <View style={styles.container}>
+        <ScrollView>
+          <View style={styles.contentContainer}>
+            {products.map(item => renderProductCard(item))}
+          </View>
+        </ScrollView>
+      </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    margin: 5,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  contentContainer: {
+    flex: 1,
+    paddingBottom: 60, 
   },
-  productItem: {
-    marginBottom: 20,
-    padding: 10,
+  productContainer: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    borderRadius: 10,
+    flexDirection: 'row',
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  productImage: {
+    borderRadius: 10,
+    width: 100,
+    height: '100%',
+    marginRight: 15,
+  },
+  productDetails: {
+    flex: 1,
   },
   productName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   productPrice: {
-    fontSize: 16,
-    color: '#888',
+    fontSize: 14,
+    marginBottom: 5,
   },
-  removeButton: {
-    marginTop: 10,
-    backgroundColor: 'red',
-    padding: 5,
-    borderRadius: 5,
+  quantityContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  removeButtonText: {
-    color: 'white',
+  quantityButton: {
+    borderWidth: 1,
+    borderColor: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 10,
+    width: 30,
+    height: 30,
+  },
+  quantityButtonText: {
+    fontSize: 12,
+  },
+  deleteButton: {
+    marginLeft: 'auto',
+  },
+  deleteButtonText: {
+    color: 'red',
+    fontSize: 16,
+  },
+  totalContainer: {
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    paddingTop: 20,
+    alignItems: 'center',
+  },
+  totalText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  checkoutButton: {
+    backgroundColor: 'black',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  checkoutButtonText: {
+    color: 'white',
+    fontSize: 24,
   },
 });
 

@@ -1,106 +1,139 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, StyleSheet, Text, Image, TouchableOpacity, ScrollView} from 'react-native';
+import {useSelector} from 'react-redux';
+import {RootState} from '../../store/rootReducer';
+import {Product} from './Home';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState([
-    { id: 1, name: 'Product 1', price: 10.99 },
-    { id: 2, name: 'Product 2', price: 19.99 },
-    // Добавьте остальные товары в корзине сюда
-  ]);
+  const products = useSelector((state: RootState) => state.product.cartProduct);
 
-  const removeCartItem = (itemId: any) => {
-    const updatedCartItems = cartItems.filter(item => item.id !== itemId);
-    setCartItems(updatedCartItems);
-  };
-
-  const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price, 0);
-  };
-
-  const renderCartItem =  ({ item }: { item: { id: number; name: string; price: number } }) => (
-    <View style={styles.cartItem}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemPrice}>Price: ${item.price}</Text>
-      <TouchableOpacity
-        style={styles.removeItemButton}
-        onPress={() => removeCartItem(item.id)}
-      >
-        <Text style={styles.removeItemButtonText}>Remove</Text>
-      </TouchableOpacity>
-    </View>
+  const [imageBaseUrl, setImageBaseUrl] = useState<string>(
+    'http://46.229.128.194:5555/image/',
   );
+  const [sum, setSum] = useState(0);
+  useEffect(() => {
+    // Calculate the total sum whenever the products change
+    const totalSum = products.reduce((total, product) => total + (product.price || 0), 0);
+    setSum(totalSum);
+  }, [products]);
+  const renderProductCard = (item: Product) => {
+    return (
+      <View key={item._id} style={styles.productContainer}>
+        <Image
+          source={{uri: imageBaseUrl + item.image}}
+          style={styles.productImage}
+        />
+        <View style={styles.productDetails}>
+          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productPrice}>{item.price} рублей</Text>
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity>
+              <Icon name="add" size={30}></Icon>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Icon name="horizontal-rule" size={30}></Icon>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton}>
+              <Icon name="delete" size={30}></Icon>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={cartItems}
-        renderItem={renderCartItem}
-        keyExtractor={item => item.id.toString()}
-      />
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Total Price: ${calculateTotalPrice()}</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
-          <Text style={styles.checkoutButtonText}>Checkout</Text>
-        </TouchableOpacity>
+    <>
+      <View style={styles.container}>
+        <ScrollView>
+        <View style={styles.contentContainer}>
+        {products.map(item => renderProductCard(item))}
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalText}>Общая стоимость: {sum} рублей</Text>
+          <TouchableOpacity style={styles.checkoutButton}>
+            <Text style={styles.checkoutButtonText}>Оформить заказ</Text>
+          </TouchableOpacity>
+        </View>
+        </View>
+        </ScrollView>
       </View>
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  contentContainer: {
+    flex: 1,
+    paddingBottom: 60, // Отступ для кнопки "Оформить заказ"
+  },
+  productContainer: {
+    flexDirection: 'row',
     marginBottom: 20,
-  },
-  cartItem: {
-    marginBottom: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  itemPrice: {
-    fontSize: 16,
-    color: '#888',
-  },
-  removeItemButton: {
-    marginTop: 10,
-    backgroundColor: 'red',
-    padding: 5,
-    borderRadius: 5,
     alignItems: 'center',
   },
-  removeItemButtonText: {
-    color: 'white',
+  productImage: {
+    width: 80,
+    height: 80,
+    marginRight: 15,
+  },
+  productDetails: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 16,
     fontWeight: 'bold',
   },
+  productPrice: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quantityButton: {
+    borderWidth: 1,
+    borderColor: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 10,
+    width: 30,
+    height: 30,
+  },
+  quantityButtonText: {
+    fontSize: 12,
+  },
+  deleteButton: {
+    marginLeft: 'auto',
+  },
+  deleteButtonText: {
+    color: 'red',
+    fontSize: 16,
+  },
   totalContainer: {
-    marginTop: 20,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    paddingTop: 20,
     alignItems: 'center',
   },
   totalText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
   checkoutButton: {
-    marginTop: 10,
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+    backgroundColor: 'black',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
   },
   checkoutButtonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontSize: 24,
   },
 });
 

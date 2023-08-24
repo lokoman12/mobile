@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   ScrollView,
   Text,
@@ -12,8 +12,11 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '../../store/rootReducer';
+import {productSlice} from '../../store/slices/product.slice';
 
 export interface Product {
   _id?: number;
@@ -27,7 +30,7 @@ export interface Product {
 const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [imageBaseUrl, setImageBaseUrl] = useState<string>(
-    'http://46.229.128.194:5555/image/'
+    'http://46.229.128.194:5555/image/',
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSizeIndex, setSelectedSizeIndex] = useState<number>(-1);
@@ -35,14 +38,16 @@ const Home: React.FC = () => {
 
   const navigation = useNavigation<StackNavigationProp<any, any>>();
 
+  const product = useSelector((state: RootState) => state.product.product);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     axios
       .get('http://46.229.128.194:5555/Products')
-      .then((response) => {
+      .then(response => {
         setProducts(response.data);
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Error fetching products:', error);
       });
   }, []);
@@ -66,16 +71,14 @@ const Home: React.FC = () => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {products.map((product) => (
+        {products.map(product => (
           <TouchableOpacity
             key={product._id}
             style={styles.card}
-            onPress={() => openModal(product)}
-          >
+            onPress={() => openModal(product)}>
             <ImageBackground
-              source={{ uri: imageBaseUrl + product.image }}
-              style={styles.cardBackground}
-            >
+              source={{uri: imageBaseUrl + product.image}}
+              style={styles.cardBackground}>
               {/* Other components inside the ImageBackground */}
             </ImageBackground>
           </TouchableOpacity>
@@ -87,17 +90,18 @@ const Home: React.FC = () => {
               <View style={styles.modalBackground}>
                 <View style={styles.modalContainer}>
                   <ImageBackground
-                    source={{ uri: imageBaseUrl + selectedProduct.image }}
-                    style={styles.modalImage}
-                  >
+                    source={{uri: imageBaseUrl + selectedProduct.image}}
+                    style={styles.modalImage}>
                     {/* Other components inside the modal image background */}
                   </ImageBackground>
                   <Text
-                    style={styles.modalDescription}
-                  >{`Название: ${selectedProduct.name}`}</Text>
+                    style={
+                      styles.modalDescription
+                    }>{`Название: ${selectedProduct.name}`}</Text>
                   <Text
-                    style={styles.modalDescription}
-                  >{`Описание: ${selectedProduct.description}`}</Text>
+                    style={
+                      styles.modalDescription
+                    }>{`Описание: ${selectedProduct.description}`}</Text>
                   {selectedProduct.sizes && (
                     <View style={styles.sizeContainer}>
                       {selectedProduct.sizes.map((size, index) => (
@@ -109,14 +113,12 @@ const Home: React.FC = () => {
                               backgroundColor: 'green',
                             },
                           ]}
-                          onPress={() => selectSize(index)}
-                        >
+                          onPress={() => selectSize(index)}>
                           <Text
                             style={[
                               styles.sizeButtonText,
-                              selectedSizeIndex === index && { color: 'white' },
-                            ]}
-                          >
+                              selectedSizeIndex === index && {color: 'white'},
+                            ]}>
                             {size}
                           </Text>
                         </TouchableOpacity>
@@ -127,26 +129,34 @@ const Home: React.FC = () => {
                     <TouchableOpacity
                       style={[styles.modalButton]}
                       onPress={() => {
-                        Alert.alert('Вы добавили в избранное продукт');
-                      }}
-                    >
-                      <Icon
-                        name="favorite-border"
-                        size={30}
-                        
-                      ></Icon>
+                        dispatch(
+                          productSlice.actions.setFavoriteProduct({
+                            _id: selectedProduct._id,
+                            price: selectedProduct.price,
+                            description: selectedProduct.description,
+                            name: selectedProduct.name,
+                            sizes: selectedProduct.sizes,
+                            image: selectedProduct.image,
+                          }),
+                        );
+                      }}>
+                      <Icon name="favorite-border" size={30}></Icon>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.modalButton]}
                       onPress={() => {
-                        Alert.alert('Вы добавили в корзину продукт');
-                      }}
-                    >
-                      <Icon
-                        name="add-shopping-cart"
-                        size={30}
-                        
-                      ></Icon>
+                        dispatch(
+                          productSlice.actions.setCartProduct({
+                            _id: selectedProduct._id,
+                            price: selectedProduct.price,
+                            description: selectedProduct.description,
+                            name: selectedProduct.name,
+                            sizes: selectedProduct.sizes,
+                            image: selectedProduct.image,
+                          }),
+                        );
+                      }}>
+                      <Icon name="add-shopping-cart" size={30}></Icon>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -162,26 +172,30 @@ const Home: React.FC = () => {
           style={styles.toolbarButton}
           onPress={() => {
             navigation.navigate('Избранное');
-          }}
-        >
-          <Icon name="favorite" size={30} ></Icon>
+          }}>
+          <Icon name="favorite" size={30}></Icon>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.toolbarButton}
           onPress={() => {
             navigation.navigate('Корзина');
-          }}
-        >
-          <Icon name="shopping-cart-checkout" size={30} ></Icon>
+          }}>
+          <Icon name="shopping-cart-checkout" size={30}></Icon>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.toolbarButton}
           onPress={() => {
             navigation.navigate('Профиль');
-          }}
-        >
-          <Icon name="account-circle" size={30} ></Icon>
+          }}>
+          <Icon name="account-circle" size={30}></Icon>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          style={styles.toolbarButton}
+          onPress={() => {
+            navigation.navigate('Тестовый');
+          }}>
+          <Icon name="adb" size={30}></Icon>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -201,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: {width: 0, height: 5},
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
